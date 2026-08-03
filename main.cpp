@@ -9,6 +9,7 @@
 #include "stb_image.h"
 
 #include <iostream>
+#include <vector>
 
 #include "shader.hpp"
 #include "camera.hpp"
@@ -131,6 +132,12 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
+    std::vector cubes = {
+        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 2.0f,  0.0f,  0.0f),
+        glm::vec3( 1.0f,  1.0f,  0.0f),
+        glm::vec3( 1.0f,  2.0f,  0.0f),
+    };
 
     while(!glfwWindowShouldClose(window))
     {
@@ -149,16 +156,21 @@ int main()
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 800.0f/600.0f, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
 
-        //glm::mat4 model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.5f, 1.0f, 0.0f));
-        glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-        ourShader.setMat4("model", model);
-
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
-        // Draw cube
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (size_t i = 0; i < cubes.size(); i++)
+        {
+            //glm::mat4 model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.5f, 1.0f, 0.0f));
+            //glm::mat4 model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubes[i]);
+            ourShader.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
