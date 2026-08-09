@@ -3,17 +3,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <vector>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-#include "shader.h"
+#include "Shader.h"
 #include "Window.h"
-
-// Has the array that contains all the vertice data
-#include "Vertices.h"
+#include "Texture.h"
+#include "Vertices.h" // vertex data
 
 void processInput(Window &win, Camera &camera, float deltaTime);
 
@@ -38,52 +33,36 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Vertex positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void*>(nullptr));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
     glEnableVertexAttribArray(0);
 
-    // Color information
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
     // Texture positions
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glEnable(GL_DEPTH_TEST);
 
-    std::vector cubes = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  0.0f,  0.0f),
-        glm::vec3( 1.0f,  1.0f,  0.0f),
-        glm::vec3( 1.0f,  2.0f,  0.0f),
-    };
-
-
-    // ======== TEXTURE STUFF =========== MAYBE MAKE A TEXTURE CLASS?
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("assets/dirt.jpg", &width, &height, &nrChannels, 0);
-    if (data)
+    std::vector<glm::vec3> cubes;
+    // create pyramid shape
+    for (int level = 0; level < 3; level++)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        int half = 2 - level;
+        for (int x = -half; x <= half; x++)
+            for (int z = -half; z <= half; z++)
+                cubes.push_back(glm::vec3(x, level, z));
     }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
 
-    // Binding the texture
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // hill
+    /*for (int x = -8; x <= 8; x++)
+        for (int z = -8; z <= 8; z++)
+        {
+            int h = (int)(2.0f * sinf(x * 0.4f) + 2.0f * cosf(z * 0.4f));
+            for (int y = -3; y <= h; y++)
+                cubes.push_back(glm::vec3(x, y, z));
+        }*/
+
+    Texture dirt = Texture("assets/dirt.jpg");
+    dirt.bind();
 
 
     while(!window.shouldClose())
