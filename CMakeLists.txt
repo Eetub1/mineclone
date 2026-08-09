@@ -7,10 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 
-add_executable(mineclone
-        main.cpp
-        src/glad.c
-)
+file(GLOB SOURCES "*.cpp" "src/*.cpp")
+add_executable(mineclone ${SOURCES} src/glad.c)
 
 target_include_directories(mineclone PRIVATE include)
 
