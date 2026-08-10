@@ -32,12 +32,12 @@ Texture::Texture(const char *filepath)
 
 Texture::~Texture()
 {
-    glActiveTexture(GL_TEXTURE0);
     glDeleteTextures(1, &t_ID);
 }
 
 
 void Texture::bind() const
 {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->t_ID);
 }

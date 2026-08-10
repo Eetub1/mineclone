@@ -8,7 +8,7 @@
 #include "Shader.h"
 #include "Window.h"
 #include "Texture.h"
-#include "Vertices.h" // vertex data
+#include "Vertices.h" // block and crosshair vertex data
 
 void processInput(Window &win, Camera &camera, float deltaTime);
 
@@ -21,7 +21,8 @@ int main()
     Window window = Window("Mineclone", 800, 600);
     if (!window.isValid()) return -1;
 
-    Shader ourShader = Shader("assets/block.vert", "assets/block.frag");
+    // ============= BLOCK SHADER ===================================
+    Shader blockShader = Shader("assets/block.vert", "assets/block.frag");
 
     unsigned int VAO, VBO;
     glGenVertexArrays(1, &VAO);
@@ -40,7 +41,21 @@ int main()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glEnable(GL_DEPTH_TEST);
+    // ================ CROSSHAIR SHADER ==================================
+    Shader crosshairShader = Shader("assets/crosshair.vert", "assets/crosshair.frag");
+    unsigned int chVAO, chVBO;
+    glGenVertexArrays(1, &chVAO);
+    glGenBuffers(1, &chVBO);
+
+    glBindVertexArray(chVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, chVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void*>(nullptr));
+    glEnableVertexAttribArray(0);
+
+
 
     std::vector<glm::vec3> cubes;
     // create pyramid shape
@@ -64,7 +79,8 @@ int main()
     Texture dirt = Texture("assets/dirt.jpg");
     dirt.bind();
 
-
+    glEnable(GL_DEPTH_TEST);
+    
     while(!window.shouldClose())
     {
         float currentFrame = glfwGetTime();
@@ -81,13 +97,13 @@ int main()
         glfwGetFramebufferSize(window.handle(), &fbW, &fbH);
         float aspect = static_cast<float>(fbW) / static_cast<float>(fbH);
 
-        ourShader.use();
+        blockShader.use();
 
         glm::mat4 projection = glm::perspective(glm::radians(window.getCamera().Zoom), aspect, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
+        blockShader.setMat4("projection", projection);
 
         glm::mat4 view = window.getCamera().GetViewMatrix();
-        ourShader.setMat4("view", view);
+        blockShader.setMat4("view", view);
 
         glBindVertexArray(VAO);
 
@@ -95,10 +111,20 @@ int main()
         {
             auto model = glm::mat4(1.0f);
             model = glm::translate(model, cube);
-            ourShader.setMat4("model", model);
+            blockShader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+
+        // Crosshair shader stuff
+        glDisable(GL_DEPTH_TEST);
+
+        crosshairShader.use();
+        crosshairShader.setFloat("aspect", aspect);
+        glBindVertexArray(chVAO);
+        glDrawArrays(GL_LINES, 0, 4);
+
+        glEnable(GL_DEPTH_TEST);
 
         glfwSwapBuffers(window.handle());
         glfwPollEvents();

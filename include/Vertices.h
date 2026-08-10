@@ -48,3 +48,13 @@ float vertices[] = {
    -0.5f,  0.5f,  0.5f,   0.0f, 0.0f,
    -0.5f,  0.5f, -0.5f,   0.0f, 1.0f
 };
+
+
+float crosshairVertices[] = {
+ // horizontal line
+ -0.02f,  0.0f,
+  0.02f,  0.0f,
+ // vertical line
+  0.0f, -0.02f,
+  0.0f,  0.02f
+};
