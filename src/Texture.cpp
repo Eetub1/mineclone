@@ -2,7 +2,7 @@
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "Stb_image.h"
 #include "Texture.h"
 
 Texture::Texture(const char *filepath)
