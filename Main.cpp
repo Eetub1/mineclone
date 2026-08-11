@@ -6,14 +6,15 @@
 #include <vector>
 
 
-//#include "Shader.h" // This is theCherno's version
+//#include "ShaderCherno.h" // This is theCherno's version of the shader class
 
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 
-#include "ShaderOLDER.h"
+#include "Renderer.h"
+#include "Shader.h"
 #include "Window.h"
 #include "Texture.h"
 #include "Vertices.h" // block and crosshair vertex data
@@ -57,20 +58,23 @@ int main()
     Texture dirt = Texture("assets/dirt.jpg");
     dirt.bind();
 
-    glEnable(GL_DEPTH_TEST);
-    
+    Renderer renderer;
+
+    renderer.setDepthTest(true);
+
     while(!window.shouldClose())
     {
+        // This could also be moved somewhere else
         float currentFrame = glfwGetTime();
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(window, window.getCamera(), deltaTime);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderer.clear();
 
         // Fixes an issue where cubes don't look like cubes
+        // This could be moved into window?
         int fbW, fbH;
         glfwGetFramebufferSize(window.handle(), &fbW, &fbH);
         float aspect = static_cast<float>(fbW) / static_cast<float>(fbH);
@@ -91,16 +95,17 @@ int main()
             model = glm::translate(model, cube);
             blockShader.setMat4("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            renderer.draw(blockVao, blockShader, 36);
         }
 
         // Crosshair shader stuff
-        glDisable(GL_DEPTH_TEST); // Crosshair can't be see through
+        renderer.setDepthTest(false);
         crosshairShader.use();
         crosshairShader.setFloat("aspect", aspect);
         crosshairVao.bind();
-        glDrawArrays(GL_LINES, 0, 4);
-        glEnable(GL_DEPTH_TEST);
+
+        renderer.draw(crosshairVao, crosshairShader, 4, GL_LINES);
+        renderer.setDepthTest(true);
 
         glfwSwapBuffers(window.handle());
         glfwPollEvents();
