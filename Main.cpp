@@ -5,13 +5,20 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
-#include "Shader.h"
+
+//#include "Shader.h" // This is theCherno's version
+
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "VertexBuffer.h"
+#include "VertexBufferLayout.h"
+
+#include "ShaderOLDER.h"
 #include "Window.h"
 #include "Texture.h"
 #include "Vertices.h" // block and crosshair vertex data
 
 void processInput(Window &win, Camera &camera, float deltaTime);
-
 
 static float lastFrame = 0.0f; // Time of last frame
 
@@ -21,40 +28,20 @@ int main()
     Window window = Window("Mineclone", 800, 600);
     if (!window.isValid()) return -1;
 
-    // ============= BLOCK SHADER ===================================
     Shader blockShader = Shader("assets/block.vert", "assets/block.frag");
+    auto blockVao = VertexArray();
+    auto blockVbo = VertexBuffer(vertices, sizeof(vertices));
+    auto blockLayout = VertexBufferLayout();
+    blockLayout.pushFloat(3);
+    blockLayout.pushFloat(2);
+    blockVao.addBuffer(blockVbo, blockLayout);
 
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Vertex positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
-    glEnableVertexAttribArray(0);
-
-    // Texture positions
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // ================ CROSSHAIR SHADER ==================================
     Shader crosshairShader = Shader("assets/crosshair.vert", "assets/crosshair.frag");
-    unsigned int chVAO, chVBO;
-    glGenVertexArrays(1, &chVAO);
-    glGenBuffers(1, &chVBO);
-
-    glBindVertexArray(chVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, chVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), static_cast<void*>(nullptr));
-    glEnableVertexAttribArray(0);
-
+    auto crosshairVao = VertexArray();
+    auto crosshairVbo = VertexBuffer(crosshairVertices, sizeof(crosshairVertices));
+    auto crosshairLayout = VertexBufferLayout();
+    crosshairLayout.pushFloat(2);
+    crosshairVao.addBuffer(crosshairVbo, crosshairLayout);
 
 
     std::vector<glm::vec3> cubes;
@@ -66,15 +53,6 @@ int main()
             for (int z = -half; z <= half; z++)
                 cubes.push_back(glm::vec3(x, level, z));
     }
-
-    // hill
-    /*for (int x = -8; x <= 8; x++)
-        for (int z = -8; z <= 8; z++)
-        {
-            int h = (int)(2.0f * sinf(x * 0.4f) + 2.0f * cosf(z * 0.4f));
-            for (int y = -3; y <= h; y++)
-                cubes.push_back(glm::vec3(x, y, z));
-        }*/
 
     Texture dirt = Texture("assets/dirt.jpg");
     dirt.bind();
@@ -105,9 +83,9 @@ int main()
         glm::mat4 view = window.getCamera().GetViewMatrix();
         blockShader.setMat4("view", view);
 
-        glBindVertexArray(VAO);
+        blockVao.bind();
 
-        for (auto cube : cubes)
+        for (auto &cube : cubes)
         {
             auto model = glm::mat4(1.0f);
             model = glm::translate(model, cube);
@@ -117,19 +95,16 @@ int main()
         }
 
         // Crosshair shader stuff
-        glDisable(GL_DEPTH_TEST);
-
+        glDisable(GL_DEPTH_TEST); // Crosshair can't be see through
         crosshairShader.use();
         crosshairShader.setFloat("aspect", aspect);
-        glBindVertexArray(chVAO);
+        crosshairVao.bind();
         glDrawArrays(GL_LINES, 0, 4);
-
         glEnable(GL_DEPTH_TEST);
 
         glfwSwapBuffers(window.handle());
         glfwPollEvents();
     }
-
     return 0;
 }
 

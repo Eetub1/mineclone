@@ -1,4 +1,4 @@
-#include "ShaderCherno.h"
+#include "Shader.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,45 +9,45 @@
 #include <vector>
 
 Shader::Shader(const std::string &filepath)
-    : m_RendererID(0), m_Filepath(filepath)
+    : id(0), m_Filepath(filepath)
 {
     ShaderProgramSource source = parseShader(filepath);
-    m_RendererID = createShader(source.vertexSource, source.fragmentSource);
+    id = createShader(source.vertexSource, source.fragmentSource);
 }
 
 Shader::~Shader()
 {
-    if (m_RendererID)
-        glDeleteProgram(m_RendererID);
+    if (id)
+        glDeleteProgram(id);
 }
 
 Shader::Shader(Shader &&other) noexcept
-    : m_RendererID(other.m_RendererID),
+    : id(other.id),
       m_Filepath(std::move(other.m_Filepath)),
-      m_UniformLocationCache(std::move(other.m_UniformLocationCache))
+      uniformLocationCache(std::move(other.uniformLocationCache))
 {
-    other.m_RendererID = 0;
+    other.id = 0;
 }
 
 Shader& Shader::operator=(Shader &&other) noexcept
 {
     if (this != &other)
     {
-        if (m_RendererID)
-            glDeleteProgram(m_RendererID);
+        if (id)
+            glDeleteProgram(id);
 
-        m_RendererID = other.m_RendererID;
+        id = other.id;
         m_Filepath = std::move(other.m_Filepath);
-        m_UniformLocationCache = std::move(other.m_UniformLocationCache);
+        uniformLocationCache = std::move(other.uniformLocationCache);
 
-        other.m_RendererID = 0;
+        other.id = 0;
     }
     return *this;
 }
 
 void Shader::bind() const
 {
-    glUseProgram(m_RendererID);
+    glUseProgram(id);
 }
 
 void Shader::unbind() const
@@ -144,7 +144,6 @@ unsigned int Shader::createShader(const std::string &vertexShader, const std::st
 
     glValidateProgram(program);
 
-    // shaders are baked into the program now
     glDeleteShader(vs);
     glDeleteShader(fs);
 
@@ -153,47 +152,47 @@ unsigned int Shader::createShader(const std::string &vertexShader, const std::st
 
 int Shader::getUniformLocation(const std::string &name)
 {
-    auto it = m_UniformLocationCache.find(name);
-    if (it != m_UniformLocationCache.end())
+    auto it = uniformLocationCache.find(name);
+    if (it != uniformLocationCache.end())
         return it->second;
 
-    int location = glGetUniformLocation(m_RendererID, name.c_str());
+    int location = glGetUniformLocation(id, name.c_str());
     if (location == -1)
     {
         std::cout << "Warning: uniform '" << name << "' not found in "
                   << m_Filepath << std::endl;
     }
 
-    m_UniformLocationCache[name] = location;
+    uniformLocationCache[name] = location;
     return location;
+}
+
+void Shader::use() const
+{
+    glUseProgram(id);
 }
 
 void Shader::setInt(const std::string &name, int value)
 {
-    glUseProgram(m_RendererID);
     glUniform1i(getUniformLocation(name), value);
 }
 
 void Shader::setFloat(const std::string &name, float value)
 {
-    glUseProgram(m_RendererID);
     glUniform1f(getUniformLocation(name), value);
 }
 
 void Shader::setVec3(const std::string &name, const glm::vec3 &value)
 {
-    glUseProgram(m_RendererID);
     glUniform3fv(getUniformLocation(name), 1, &value[0]);
 }
 
 void Shader::setVec4(const std::string &name, float x, float y, float z, float w)
 {
-    glUseProgram(m_RendererID);
     glUniform4f(getUniformLocation(name), x, y, z, w);
 }
 
 void Shader::setMat4(const std::string &name, const glm::mat4 &matrix)
 {
-    glUseProgram(m_RendererID);
     glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
