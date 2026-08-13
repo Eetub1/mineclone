@@ -1,9 +1,18 @@
+#include <string>
+
 class Texture
 {
 private:
-    unsigned int t_ID;
+    unsigned int id;
+    std::string filepath;
+    unsigned char *localBuffer;
+    int width, height, BPP;
 public:
-    Texture(const char *filepath);
+    Texture(const std::string &filepath);
     ~Texture();
-    void bind() const;
+    void bind(unsigned int slot = 0) const;
+    void unbind() const;
+
+    int getWidth() { return width; }
+    int getHeight() { return height; }
 };

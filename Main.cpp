@@ -5,9 +5,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
-
-//#include "ShaderCherno.h" // This is theCherno's version of the shader class
-
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
@@ -59,7 +56,6 @@ int main()
     dirt.bind();
 
     Renderer renderer;
-
     renderer.setDepthTest(true);
 
     while(!window.shouldClose())
