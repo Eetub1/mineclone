@@ -7,19 +7,6 @@
 
 class Window
 {
-public:
-    Window(const char *projectName, int width = 800, int height = 600);
-    ~Window();
-
-    bool isValid() const { return window != nullptr; }
-    bool shouldClose() const { return glfwWindowShouldClose(window); }
-    void swapBuffers() { glfwSwapBuffers(window); }
-    void pollEvents() { glfwPollEvents(); }
-    GLFWwindow* handle() const { return window; }
-
-    float aspectRatio() const;
-    Camera& getCamera() { return camera; }
-
 private:
     GLFWwindow *window = nullptr;
     int scrWidth, scrHeight;
@@ -34,4 +21,17 @@ private:
 
     void onMouseMove(double xpos, double ypos);
     void onScroll(double yoffset);
+
+public:
+    Window(const char *projectName, int width = 800, int height = 600);
+    ~Window();
+
+    bool isValid() const { return window != nullptr; }
+    bool shouldClose() const { return glfwWindowShouldClose(window); }
+    void swapBuffers() { glfwSwapBuffers(window); }
+    void pollEvents() { glfwPollEvents(); }
+    GLFWwindow* handle() const { return window; }
+
+    float aspectRatio() const;
+    Camera& getCamera() { return camera; }
 };

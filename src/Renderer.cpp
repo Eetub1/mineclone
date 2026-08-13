@@ -3,7 +3,7 @@
 
 void Renderer::draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
 {
-    shader.use();
+    shader.bind();
     va.bind();
     ib.bind();
     glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr);
@@ -12,7 +12,7 @@ void Renderer::draw(const VertexArray& va, const IndexBuffer& ib, const Shader& 
 
 void Renderer::draw(const VertexArray& va, const Shader& shader, unsigned int vertexCount, GLenum mode) const
 {
-    shader.use();
+    shader.bind();
     va.bind();
     glDrawArrays(mode,  0, vertexCount);
 }
