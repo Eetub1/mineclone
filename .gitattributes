@@ -1,4 +1,11 @@
-src/glad.c linguist-vendored
-include/glad/glad.h linguist-vendored
-include/KHR/khrplatform.h linguist-vendored
-include/stb_image.h linguist-vendored
+# Third-party code — excluded from GitHub language statistics
+vendor/** linguist-vendored
+
+# Shaders — so GitHub highlights and counts them properly
+*.vert linguist-language=GLSL
+*.frag linguist-language=GLSL
+*.glsl linguist-language=GLSL
+*.shader linguist-language=GLSL
+
+# Normalize line endings
+* text=auto

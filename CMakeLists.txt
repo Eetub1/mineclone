@@ -20,10 +20,16 @@ set(IMGUI_SOURCES
         ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
-add_executable(mineclone ${SOURCES} src/glad.c)
+add_executable(mineclone
+        ${SOURCES}
+        ${IMGUI_SOURCES}
+        vendor/glad/src/glad.c
+)
 
 target_include_directories(mineclone PRIVATE
         include
+        vendor/glad/include
+        vendor/stb
         ${IMGUI_DIR}
         ${IMGUI_DIR}/backends
 )
