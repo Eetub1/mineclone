@@ -36,6 +36,7 @@ int main()
     auto blockVbo = VertexBuffer(vertices, sizeof(vertices));
     auto blockLayout = VertexBufferLayout();
     blockLayout.pushFloat(3);
+    blockLayout.pushFloat(3);
     blockLayout.pushFloat(2);
     blockVao.addBuffer(blockVbo, blockLayout);
 
