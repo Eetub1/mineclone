@@ -24,6 +24,7 @@ void processInput(Window &win, Camera &camera, float deltaTime);
 
 static float lastFrame = 0.0f; // Time of last frame
 
+glm::vec3 lightPos(10.0f, 1.0f, 10.0f);
 
 int main()
 {
@@ -101,6 +102,8 @@ int main()
         float aspect = window.aspectRatio();
 
         blockShader.bind();
+        blockShader.setVec3("lightPos", lightPos); // this could be set outside loop, because it doesn't change
+        blockShader.setVec3("viewPos", camera.Position);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), aspect, 0.1f, 100.0f);
         blockShader.setMat4("projection", projection);
@@ -130,7 +133,7 @@ int main()
         lightsourceShader.bind();
         lightsourceShader.setMat4("projection", projection);
         lightsourceShader.setMat4("view", view);
-        auto model = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 10.0f));
+        auto model = glm::translate(glm::mat4(1.0f), lightPos);
         lightsourceShader.setMat4("model", model);
         renderer.draw(lightsourceVao, lightsourceShader, 36);
 
