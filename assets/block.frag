@@ -9,6 +9,21 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform sampler2D dirtTexture;
 
+struct Flashlight {
+    vec3 position;
+    vec3 direction;
+    float cutOff;
+    float outerCutOff;
+    bool on;
+
+    // attenuation
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+uniform Flashlight flashlight;
+
 void main()
 {
     vec3 lightColor = vec3(1.0); // this should be a uniform, don't hardcode this
@@ -29,7 +44,24 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 phong = (ambient + diffuse + specular);
+    vec3 result = ambient + diffuse + specular;
 
-    fragColor = vec4(phong, 1.0) * texture(dirtTexture, texCoord);
+    if (flashlight.on) {
+        float distance    = length(flashlight.position - fragPos);
+        float attenuation = 1.0 / (flashlight.constant + flashlight.linear * distance +
+        flashlight.quadratic * (distance * distance));
+
+        vec3 spotDir = normalize(flashlight.position - fragPos);
+        float theta = dot(spotDir, normalize(-flashlight.direction));
+        float epsilon = flashlight.cutOff - flashlight.outerCutOff;
+        float intensity = clamp((theta - flashlight.outerCutOff) / epsilon, 0.0, 1.0);
+
+        float fDiff = max(dot(norm, spotDir), 0.0);
+        vec3 fReflect = reflect(-spotDir, norm);
+        float fSpec = pow(max(dot(viewDir, fReflect), 0.0), 32);
+
+        result += (fDiff * lightColor + specularStrength * fSpec * lightColor) * intensity * attenuation;
+    }
+
+    fragColor = vec4(result, 1.0) * texture(dirtTexture, texCoord);
 }

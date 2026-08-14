@@ -22,7 +22,8 @@
 
 void processInput(Window &win, Camera &camera, float deltaTime);
 
-static float lastFrame = 0.0f; // Time of last frame
+float lastFrame = 0.0f; // Time of last frame
+bool flashlightOn = true;
 
 glm::vec3 lightPos(10.0f, 1.0f, 10.0f);
 
@@ -40,6 +41,9 @@ int main()
     blockLayout.pushFloat(3);
     blockLayout.pushFloat(2);
     blockVao.addBuffer(blockVbo, blockLayout);
+
+    blockShader.bind();
+    blockShader.setVec3("lightPos", lightPos);
 
 
     Shader crosshairShader = Shader("assets/crosshair.vert", "assets/crosshair.frag");
@@ -78,7 +82,6 @@ int main()
 
     while(!window.shouldClose())
     {
-        // This could also be moved somewhere else
         float currentFrame = glfwGetTime();
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -102,8 +105,17 @@ int main()
         float aspect = window.aspectRatio();
 
         blockShader.bind();
-        blockShader.setVec3("lightPos", lightPos); // this could be set outside loop, because it doesn't change
         blockShader.setVec3("viewPos", camera.Position);
+
+        blockShader.setVec3("flashlight.position",  camera.Position);
+        blockShader.setVec3("flashlight.direction", camera.Front);
+        blockShader.setFloat("flashlight.cutOff",   glm::cos(glm::radians(12.5f)));
+        blockShader.setFloat("flashlight.outerCutOff", glm::cos(glm::radians(17.5f)));
+        blockShader.setBool("flashlight.on", flashlightOn);
+
+        blockShader.setFloat("flashlight.constant",  1.0f);
+        blockShader.setFloat("flashlight.linear",    0.09f);
+        blockShader.setFloat("flashlight.quadratic", 0.032f);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), aspect, 0.1f, 100.0f);
         blockShader.setMat4("projection", projection);
